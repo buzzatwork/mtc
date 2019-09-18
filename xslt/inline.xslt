@@ -25,6 +25,16 @@
         </xsl:if>
     </xsl:template>
     
+    <xsl:template match="emphasis[@emph='bolditalic']">
+        <xsl:if test="ends-with(preceding-sibling::text()[1], ' ')">
+            <xsl:text> </xsl:text>
+        </xsl:if>
+        <xsl:text>***</xsl:text><xsl:apply-templates/><xsl:text>***</xsl:text>
+        <xsl:if test="starts-with(following-sibling::text()[1], ' ')">
+            <xsl:text> </xsl:text>
+        </xsl:if>
+    </xsl:template>
+
     <xsl:template match="xref">
         <xsl:if test="ends-with(preceding-sibling::text()[1], ' ')">
             <xsl:text> </xsl:text>
