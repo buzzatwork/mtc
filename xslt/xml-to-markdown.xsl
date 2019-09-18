@@ -196,10 +196,10 @@
   <xsl:template match="chapter/title"/>
   
   <xsl:template match="article/title">
-    <xsl:text>## </xsl:text>
+    <!--<xsl:text>## </xsl:text>
     <xsl:value-of select="concat(parent::article/@titleabbrev, '. ')"/>
     <xsl:apply-templates select="*|text()" />
-    <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
+    <xsl:text>&#xa;&#xa;</xsl:text> <!-\- Block element -\->-->
   </xsl:template>
   
   <xsl:template match="info">
