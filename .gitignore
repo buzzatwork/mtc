@@ -9,3 +9,5 @@ site
 # grumpfh to ignore
 **/.DS_Store
 *.xpr
+# this directory and his content must be ignored
+site/
