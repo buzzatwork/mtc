@@ -49,6 +49,7 @@
     <xsl:text>**: </xsl:text>
   </xsl:template>
   
+  <!--  revdescription/para  -->
   <xsl:template match="para[parent::revdescription][not(parent::footnote)]" priority="11">
     <xsl:if test="position()=1">
       <xsl:apply-templates select="ancestor::revhistory/title"/>
@@ -57,48 +58,79 @@
     <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
   </xsl:template>
   
+  <!--  concentionmodel//revhistory//version/para  -->
+  <xsl:template match="para[parent::version[ancestor::revhistory[ancestor::conventionmodel]]][not(parent::footnote)]" priority="10">
+    <xsl:text>&#xa;&#xa;></xsl:text>
+    <xsl:if test="@number">
+      <xsl:variable name="number" select="replace(@number, '\.$', '\\.') || '  '"/>
+      <xsl:value-of select="$number"/>
+    </xsl:if>
+    <xsl:apply-templates/>
+    <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
+  </xsl:template>
+  
+  <!--  standard para with or without number -->
   <xsl:template match="para[not(parent::footnote)]">
-    <xsl:choose>
-      <xsl:when test="parent::listitem[parent::itemizedlist]">
-        <xsl:text>&#xa;&#xa;- </xsl:text>
-        <xsl:apply-templates select="*|text()" />
-        <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
-      </xsl:when>
+    <xsl:variable name="id" select="@id"/>
+    <xsl:if test="@number">
+      <xsl:variable name="number" select="replace(@number, '\.$', '\\.') || '  '"/>
+      <xsl:value-of select="$number"/>
+    </xsl:if>
+    <xsl:apply-templates/>
+    
+    <!--  Quand un paragraphe (avant History) contient une liste (orderedlist par exemple),
+        on ne veut pas insérer l'id sous la liste. Dans ce cas, l'id du para sera insérée
+        dans le template qui gère orderedlist (chercher le commentaire ADD ID)  -->
+    
+    <xsl:if test="not(child::orderedlist)">
+      <xsl:text>&#xa;</xsl:text>
+      <xsl:text expand-text="false">{: #</xsl:text>
+      <xsl:value-of select="$id"/>
+      <xsl:text expand-text="false"> }</xsl:text>
+      <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
+    </xsl:if>
+  </xsl:template>
+  
+  <!--  itemizedlist/listitem/para -->
+  <xsl:template match="para[parent::listitem[parent::itemizedlist]][not(parent::footnote)]" priority="10">
+    <xsl:text>&#xa;&#xa;- </xsl:text>
+    <xsl:apply-templates select="*|text()" />
+    <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
+  </xsl:template>
+  
+  <!--  orderedlist/listitem/para -->
+  <xsl:template match="para[parent::listitem[parent::orderedlist]][not(parent::footnote)]" priority="10">
+    <xsl:variable name="id" select="ancestor::para/@id"/>
+    <xsl:variable name="item" select="count(parent::listitem[preceding-sibling::listitem])+1"/>
+    <xsl:variable name="level">
+      <xsl:choose>
+        <xsl:when test="parent::listitem[parent::orderedlist[parent::listitem[parent::orderedlist]]]">2</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    
+    <xsl:if test="$item=1">
+      <!-- ADD ID: Le if ci-dessous permet d'insérer l'id du paragraphe dans lequel l'ordelist est contenu  --> 
+      <xsl:if test="parent::listitem[parent::orderedlist[parent::para[parent::article]]]">
+        <xsl:text>&#xa;</xsl:text>
+        <xsl:text expand-text="false">{: #</xsl:text>
+        <xsl:value-of select="$id"/>
+        <xsl:text expand-text="false"> }</xsl:text>
+      </xsl:if>
       
-      <xsl:when test="parent::listitem[parent::orderedlist]">
-        <xsl:variable name="id" select="ancestor::para/@id"/>
-        <xsl:variable name="item" select="count(parent::listitem[preceding-sibling::listitem])+1"/>
-        <xsl:variable name="level">
-          <xsl:choose>
-            <xsl:when test="parent::listitem[parent::orderedlist[parent::listitem[parent::orderedlist]]]">2</xsl:when>
-            <xsl:otherwise>1</xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:if test="$item=1">
-          <!-- ADD ID: Le if ci-dessous permet d'insérer l'id du paragraphe dans lequel l'ordelist est contenu  --> 
-          <xsl:if test="parent::listitem[parent::orderedlist[parent::para[parent::article]]]">
-            <xsl:text>&#xa;</xsl:text>
-            <xsl:text expand-text="false">{: #</xsl:text>
-            <xsl:value-of select="$id"/>
-            <xsl:text expand-text="false"> }</xsl:text>
-          </xsl:if>
-          
-          <xsl:text>&#xa;&#xa;</xsl:text>
-        </xsl:if>
-        
-<xsl:if test="ancestor::revhistory">
->
-</xsl:if>
+      <xsl:text>&#xa;&#xa;</xsl:text>
+    </xsl:if>
+    
+<xsl:if test="ancestor::revhistory">></xsl:if>
 
-<xsl:choose>
-  <xsl:when test="parent::listitem/@number">
-    <xsl:apply-templates select="concat(parent::listitem/@number, ' ')"/>
-    <xsl:apply-templates select="*|text()"/>
-  </xsl:when>
-  <xsl:otherwise>
-
-    <!--    Below, no indentation with the CHOOSE code, the indentation is mandatory (or not) to define the level of the lists    -->
+    <xsl:choose>
+      <xsl:when test="parent::listitem/@number">
+        <xsl:apply-templates select="concat(parent::listitem/@number, ' ')"/>
+        <xsl:apply-templates select="*|text()"/>
+      </xsl:when>
+      <xsl:otherwise>
+        
+        <!--    Below, no indentation with the CHOOSE code, the indentation is mandatory (or not) to define the level of the lists    -->
 <xsl:choose>
 <xsl:when test="$level=1">
 1. <xsl:apply-templates select="*|text()" />
@@ -107,46 +139,12 @@
     1. <xsl:apply-templates select="*|text()" />
 </xsl:when>
 </xsl:choose>
-  </xsl:otherwise>
+</xsl:otherwise>
 </xsl:choose>
-        
 
-        <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
-      </xsl:when>
-      
-      <xsl:when test="parent::version[ancestor::revhistory[ancestor::conventionmodel]]">
-        <xsl:text>&#xa;&#xa;></xsl:text>
-        <xsl:if test="@number">
-          <xsl:variable name="number" select="replace(@number, '\.$', '\\.') || '  '"/>
-          <xsl:value-of select="$number"/>
-        </xsl:if>
-        <xsl:apply-templates/>
-        <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
-      </xsl:when>
-      
-      <xsl:otherwise>
-        <xsl:variable name="id" select="@id"/>
-        <xsl:if test="@number">
-          <xsl:variable name="number" select="replace(@number, '\.$', '\\.') || '  '"/>
-          <xsl:value-of select="$number"/>
-        </xsl:if>
-        <xsl:apply-templates/>
-        
-        <!--  Quand un paragraphe (avant History) contient une liste (orderedlist par exemple),
-        on ne veut pas insérer l'id sous la liste. Dans ce cas, la liste sera insérée
-        dans le template qui gère orderedlist (chercher le commentaire ADD ID)  -->
-
-        <xsl:if test="not(child::orderedlist)">
-          <xsl:text>&#xa;</xsl:text>
-          <xsl:text expand-text="false">{: #</xsl:text>
-          <xsl:value-of select="$id"/>
-          <xsl:text expand-text="false"> }</xsl:text>
-          <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
-        </xsl:if>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
   </xsl:template>
-  
+
   <xsl:template match="
     introduction/title |
     conventionmodel/title |
