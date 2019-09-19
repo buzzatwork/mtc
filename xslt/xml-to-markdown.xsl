@@ -87,8 +87,18 @@
           <xsl:text>&#xa;&#xa;</xsl:text>
         </xsl:if>
         
-<!--    Below, no indentation with the CHOOSE code, the indentation is mandatory (or not) to define the level of the lists    -->
+<xsl:if test="ancestor::revhistory">
+>
+</xsl:if>
 
+<xsl:choose>
+  <xsl:when test="parent::listitem/@number">
+    <xsl:apply-templates select="concat(parent::listitem/@number, ' ')"/>
+    <xsl:apply-templates select="*|text()"/>
+  </xsl:when>
+  <xsl:otherwise>
+
+    <!--    Below, no indentation with the CHOOSE code, the indentation is mandatory (or not) to define the level of the lists    -->
 <xsl:choose>
 <xsl:when test="$level=1">
 1. <xsl:apply-templates select="*|text()" />
@@ -97,6 +107,9 @@
     1. <xsl:apply-templates select="*|text()" />
 </xsl:when>
 </xsl:choose>
+  </xsl:otherwise>
+</xsl:choose>
+        
 
         <xsl:text>&#xa;&#xa;</xsl:text> <!-- Block element -->
       </xsl:when>
